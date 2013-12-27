@@ -37,6 +37,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.google.theoku.photoSearcher.control.PhotoSearcherControl;
 import com.google.theoku.photoSearcher.model.IPhotoSearcherModelChangedListener;
 import com.google.theoku.photoSearcher.model.PhotoSearcherModel;
@@ -97,6 +100,7 @@ public class PhotoSearcherView implements IPhotoSearcherModelChangedListener{
 	private ImagePreview mImagePreview;
 	private JDatePickerImpl mDatePicker;
 	private JCheckBox mHasDate;
+	private static final Log LOGGER = LogFactory.getLog(PhotoSearcherView.class);
 
 	public PhotoSearcherView(PhotoSearcherControl pControl) {
 
@@ -191,42 +195,17 @@ public class PhotoSearcherView implements IPhotoSearcherModelChangedListener{
 
 
 	}
-
-
-
-
-	public static void createAndShowGUI() throws UnknownHostException {
-		JFrame aFrame = new JFrame();
-
-		PhotoSearcherModel aModel = new PhotoSearcherModel();
-		PhotoSearcherControl aControl = new PhotoSearcherControl(aModel);
-
-		PhotoSearcherView aView = new PhotoSearcherView(aControl);
-
-		aFrame.setContentPane(aView.getView());
-		aFrame.pack();
-		aFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		aFrame.setVisible(true);
-	}
-	private Container getView() {
+	public Container getView() {
 		return mView;
 	}
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable() {
-
-			public void run() {
-				try {
-					createAndShowGUI();
-				} catch (UnknownHostException e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	
 
 
 	public void photoModelChanged(PhotoSearcherModel pModel) {
-		System.out.println("Model Changed");
+		
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Photo Searcher Model has been updated!");
+		}
 
 		File origFile = pModel.getOriginalFileLocation();
 
