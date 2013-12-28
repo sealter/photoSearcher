@@ -2,7 +2,10 @@ package com.google.theoku.photoSearcher.control;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,7 +13,9 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -20,8 +25,12 @@ import org.apache.commons.logging.LogFactory;
 import com.google.theoku.photoSearcher.EConfigKeys;
 import com.google.theoku.photoSearcher.control.tag.TagPanelControl;
 import com.google.theoku.photoSearcher.model.IPhotoSearcherModelChangedListener;
+import com.google.theoku.photoSearcher.model.PhotoRecord;
+import com.google.theoku.photoSearcher.model.PhotoRecordModel;
 import com.google.theoku.photoSearcher.model.PhotoSearcherModel;
 import com.google.theoku.photoSearcher.utils.ImageFileFilter;
+import com.google.theoku.photoSearcher.utils.Utils;
+import com.google.theoku.photoSearcher.view.PhotoRecordView;
 import com.google.theoku.photoSearcher.view.PhotoSearcherView;
 import com.google.theoku.photoSearcher.view.tag.TagPanelView;
 import com.mongodb.BasicDBObject;
@@ -44,12 +53,12 @@ public class PhotoSearcherControl {
 	 */
 	private static final Log LOGGER = 
 			LogFactory.getLog(PhotoSearcherControl.class);
-	
+
 	/**
 	 * {@link JFileChooser} that's used to load the initial image
 	 */
 	private JFileChooser mOpenChooser = new JFileChooser();
-	
+
 	/**
 	 * The {@link JFileChooser} that's used to set the destination of 
 	 * the image
@@ -62,20 +71,20 @@ public class PhotoSearcherControl {
 	 * from the view. 
 	 */
 	private final PhotoSearcherModel mModel;
-	
+
 	/**
 	 * The Client interface to the Mongo Application
 	 */
 	private final MongoClient mongoClient;
-	
+
 	/**The interface to the database within the Mongo Application**/
 	private final DB mDb;
-	
+
 	/**The interface to the collection within the database, that is referenced
 	 * in the mDB. 
 	 */
 	private DBCollection mTable;
-	
+
 	/**
 	 * Control for the {@link TagPanelView}. This is used to tag the images
 	 */
@@ -100,7 +109,7 @@ public class PhotoSearcherControl {
 			for(EConfigKeys aKey : EConfigKeys.values()) {
 
 				String value = aConfig.getString(aKey.getKeyName());
-				
+
 				if(LOGGER.isTraceEnabled()) {
 					LOGGER.trace("Loading: key= " + aKey +", value= " + value);
 				}
@@ -116,7 +125,7 @@ public class PhotoSearcherControl {
 		for(EConfigKeys aKey : EConfigKeys.values()) {
 
 			if(keyValues.get(aKey) == null) {
-				
+
 				if(LOGGER.isWarnEnabled()) {
 					LOGGER.warn("Key: " + aKey + " was not set correctly, using default: " + aKey.getDefaultValue());
 				}
@@ -124,7 +133,7 @@ public class PhotoSearcherControl {
 			}
 		}
 		int portNum = DBPort.PORT;
-		
+
 		try {
 			portNum = Integer.parseInt(keyValues.get(EConfigKeys.DB_PORT));
 		} catch(NumberFormatException e) {
@@ -138,15 +147,15 @@ public class PhotoSearcherControl {
 				keyValues.get(EConfigKeys.DB_HOST),portNum);
 
 		mTagPanelControl = new TagPanelControl(pModel.getTagPanelModel());
-		
+
 		mongoClient = new MongoClient(mongoAddress);
-		
+
 		mDb = mongoClient.getDB(keyValues.get(EConfigKeys.DB_NAME));
-		
+
 		mTable = mDb.getCollection(keyValues.get(EConfigKeys.DB_COLLECTION));
-		
+
 		mModel = pModel;
-		
+
 		mOpenChooser.setFileFilter(new ImageFileFilter());
 	}
 
@@ -256,6 +265,21 @@ public class PhotoSearcherControl {
 			document.put("Tags", tagList);
 		}
 
+
+		try {
+			BufferedImage aRead = ImageIO.read(mModel.getOriginalFileLocation());
+			ByteArrayOutputStream baos=new ByteArrayOutputStream(1000);
+			ImageIO.write(aRead, "jpg", baos);
+			baos.flush();
+
+			document.put("Image", baos.toByteArray());
+		} catch (IOException e) {
+			if(LOGGER.isErrorEnabled()) {
+				LOGGER.error("Unable to read Image, will not include in DB!", e);
+			}
+		}
+		mModel.getOriginalFileLocation();
+
 		mTable.insert(document);
 
 		mModel.getOriginalFileLocation().renameTo(mModel.getDestination());
@@ -267,4 +291,25 @@ public class PhotoSearcherControl {
 		return mTagPanelControl;
 	}
 
+	public void loadImageFromDB() {
+
+		List<PhotoRecord> records = Utils.loadRecords(mTable);
+		
+		PhotoRecordModel aModel = 
+				new PhotoRecordModel(records);
+		PhotoRecordControl aControl = new PhotoRecordControl(aModel, mTable);
+		PhotoRecordView aView = new PhotoRecordView(aControl);
+		
+		JFrame aFrame = new JFrame();
+		aFrame.setContentPane(aView.getView());
+		aFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		aFrame.pack();
+		aFrame.setVisible(true);
+
+	}
+
+
+
 }
+
+

@@ -78,7 +78,11 @@ public class PhotoSearcherView implements IPhotoSearcherModelChangedListener{
 			super.paintComponent(pG);
 
 			if(mImage != null) {
-				pG.drawImage(mImage, 0, 0, getWidth(), getHeight(),null);
+				
+				int width = Math.min(mImage.getWidth(), getWidth());
+				int height = Math.min(mImage.getHeight(), getHeight());
+				
+				pG.drawImage(mImage, 0, 0, width, height,null);
 
 			}
 		}
