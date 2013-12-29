@@ -181,7 +181,8 @@ public class PhotoSearcherView implements IPhotoSearcherModelChangedListener{
 		mImagePreview = new ImagePreview(null);
 
 		mView.add(topPanel, BorderLayout.NORTH);
-		mView.add(new JScrollPane(mImagePreview), BorderLayout.CENTER);
+//		mView.add(new JScrollPane(mImagePreview), BorderLayout.CENTER);
+		mView.add(mImagePreview, BorderLayout.CENTER);
 		mView.add(metaPanel, BorderLayout.EAST);
 
 		JButton submit = new JButton("Submit");

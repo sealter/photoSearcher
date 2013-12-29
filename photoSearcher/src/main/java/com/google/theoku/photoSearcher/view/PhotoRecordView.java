@@ -10,6 +10,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -69,8 +70,15 @@ public class PhotoRecordView {
 		
 		buttonPanel.add(reload);
 		JScrollPane aPane = new JScrollPane(aTable);
+		
+		
+		JList<String>tagListView= new JList<String>(aModel.getTagListModel());
+		tagListView.setSelectionModel(aModel.getTagListSelectionModel());
+		
+		
 		mView.add(aPane, BorderLayout.CENTER);
 		mView.add(buttonPanel, BorderLayout.SOUTH);
+		mView.add(new JScrollPane(tagListView), BorderLayout.EAST);
 	}
 	
 	public JPanel getView() {

@@ -1,6 +1,7 @@
 package com.google.theoku.photoSearcher.model.tag;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -11,7 +12,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
 
 public class TagPanelModel {
-	
+
 	private final DefaultListModel<String>mSelectedTagsModel = new DefaultListModel<String>();
 	private final DefaultListModel<String>mAvailableTagsModel = new DefaultListModel<String>();
 	private final Set<String>mAllTags = new TreeSet<String>();
@@ -34,7 +35,7 @@ public class TagPanelModel {
 	public DefaultListModel<String> getAvailableTagsModel() {
 		return mAvailableTagsModel;
 	}
-	
+
 	public void addTag(String pTag) {
 		if(mAllTags.add(pTag)) {
 			mViewedAllTags.add(pTag);
@@ -47,30 +48,38 @@ public class TagPanelModel {
 	public void addToSelected(String pString) {
 		if(mSelectedTags.add(pString)) {
 			mSelectedTagsModel.clear();
-			
+
 			for(String aString : mSelectedTags) {
 				mSelectedTagsModel.addElement(aString);
 			}
 		}
-		
+
 	}
 	public void removeFromSelected(String pSelectedTag) {
 		if(mSelectedTags.remove(pSelectedTag)) {
 			mSelectedTagsModel.removeElement(pSelectedTag);
-			
+
 		}
-		
+
 	}
 	public void reset() {
 		mSelectedTags.clear();
 		mSelectedTagsModel.clear();
 		mSelectedTagsSelectionModel.clearSelection();
 		mAvailableSelectedTagSelectionModel.clearSelection();
-		
+
 	}
 	public List<String> getselectedTags() {
-		
+
 		return new ArrayList<String>(mSelectedTags);
+	}
+	public void addTags(Collection<String> pTags) {
+
+		for(String aTag : pTags) {
+			addTag(aTag);
+		}
+
+
 	}
 
 }

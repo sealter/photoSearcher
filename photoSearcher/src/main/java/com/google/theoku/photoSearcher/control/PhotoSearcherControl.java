@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
@@ -36,6 +37,8 @@ import com.google.theoku.photoSearcher.view.tag.TagPanelView;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.mongodb.DBPort;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
@@ -155,6 +158,10 @@ public class PhotoSearcherControl {
 		mTable = mDb.getCollection(keyValues.get(EConfigKeys.DB_COLLECTION));
 
 		mModel = pModel;
+		
+		Set<String>tags = Utils.getAllTags(mTable);
+		
+		mModel.getTagPanelModel().addTags(tags);
 
 		mOpenChooser.setFileFilter(new ImageFileFilter());
 	}
